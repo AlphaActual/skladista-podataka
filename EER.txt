@@ -1,0 +1,88 @@
+Entities and Attributes
+Manufacturer
+
+manufacturer_id (PK)
+
+name (e.g., "hyundi", "volkswagen", "BMW")
+
+TransmissionType
+
+transmission_id (PK)
+
+type (e.g., "Manual", "Automatic", "Semi-Auto")
+
+FuelType
+
+fuel_id (PK)
+
+type (e.g., "Petrol", "Diesel", "Hybrid")
+
+Car
+
+car_id (PK, surrogate key)
+
+model (e.g., "I10", "Polo", "2 Series")
+
+year
+
+price
+
+mileage
+
+tax
+
+mpg (miles per gallon)
+
+engineSize
+
+manufacturer_id (FK to Manufacturer)
+
+transmission_id (FK to TransmissionType)
+
+fuel_id (FK to FuelType)
+
+
+Relationships
+Manufacturer → Car
+
+One manufacturer can produce many cars.
+
+Relationship: 1:N (One-to-Many).
+
+TransmissionType → Car
+
+One transmission type (e.g., "Manual") can belong to many cars.
+
+Relationship: 1:N.
+
+FuelType → Car
+
+One fuel type (e.g., "Petrol") can belong to many cars.
+
+Relationship: 1:N.
+
+
++------------------+          +------------------+
+|   Manufacturer   |          | TransmissionType |
+|------------------|          |------------------|
+| manufacturer_id  |◄---||----| transmission_id  |
+| name             |          | type             |
++------------------+          +------------------+
+         △                            △
+         |                            |
+         ||                          ||
++------------------+          +------------------+
+|      Car         |          |    FuelType      |
+|------------------|          |------------------|
+| car_id           |          | fuel_id          |
+| model            |◄---||----| type             |
+| year             |          +------------------+
+| price            |
+| mileage          |
+| tax              |
+| mpg              |
+| engineSize       |
+| manufacturer_id  |
+| transmission_id  |
+| fuel_id          |
++------------------+
