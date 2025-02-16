@@ -1,7 +1,6 @@
 import pandas as pd
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, text
+from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 
 CSV_FILE_PATH = "CarsData_PROCESSED.csv"
 df = pd.read_csv(CSV_FILE_PATH)
@@ -9,6 +8,20 @@ print("CSV size: ", df.shape)
 print(df.head())
 
 Base = declarative_base()
+
+# Add this before create_engine()
+from sqlalchemy import create_engine, text
+
+# Create a temporary engine to connect to MySQL server without specifying a database
+temp_engine = create_engine('mysql+pymysql://root:root@localhost', echo=False)
+
+# Create database if it doesn't exist
+with temp_engine.connect() as conn:
+    conn.execute(text("CREATE DATABASE IF NOT EXISTS cars CHARACTER SET utf8mb4"))
+    conn.commit()
+
+# Now create the main engine connecting to the cars database
+engine = create_engine('mysql+pymysql://root:root@localhost:3306/cars', echo=False)
 
 # Define database schema
 #-----------------------------------------------------------------------------------------------------
@@ -52,7 +65,6 @@ class Car(Base):
     fuel = relationship('FuelType', back_populates='cars')
 
 # Setup database connection
-engine = create_engine('mysql+pymysql://root:root@localhost:3306/cars', echo=False)
 Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
