@@ -1,48 +1,53 @@
 import pandas as pd
 
 """
-1. Skripta za predprocesiranje skupa podataka
+1. Script for dataset preprocessing
 
-Predprocesiranje ovisi o skupu podataka. Potrebno je prilagoditi skriptu za vlastiti skup.
-Checkpoint 1 je obuhvaćao pronalazak skupa podataka i analizu. Ovdje je potrebno napraviti predprocesiranje na temelju analize.
-U nastavku je prikazan primjer predprocesiranja skupa podataka naš case Oprema d.d.
+Preprocessing depends on the dataset. The script needs to be adapted for your dataset.
+Checkpoint 1 included finding the dataset and analysis. Here we need to preprocess based on that analysis.
+Below is an example of preprocessing the cars dataset.
 """
 
-# Određivanje putanje do CSV datoteke
-CSV_FILE_PATH = "H:/My Drive/Skladišta i rudarenje podataka/2023-24/Vjezbe/Seminar 1/WA_Sales_Products_2012-14.csv"
+# Defining path to CSV file
+CSV_FILE_PATH = "CarsData.csv"
 
-# Učitavanje CSV datoteke (provjerite svoje delimiter u csv datoteci), ispis broja redaka i stupaca
+# Loading CSV file and displaying row and column count
 df = pd.read_csv(CSV_FILE_PATH, delimiter=',')
 print("CSV size before: ", df.shape)
 
-df = df.drop(columns=['Product line']) # Brisanje nepotrebnih stupaca  (TODO: dodati Product line u kao još jednu hierarhiju u dimenziji)
-df['Retailer country'] = df['Retailer country'].replace('USA', 'United States') # Zamjena vrijednosti zbog API-a koji pozivamo kasnije u drugom koraku
-df['Retailer country'] = df['Retailer country'].replace('UK', 'United Kingdom') # Zamjena vrijednosti zbog API-a koji pozivamo kasnije u drugom koraku
-df = df.dropna() # Brisanje redaka s nedostajućim vrijednostima
-print("CSV size after: ", df.shape) # Ispis broja redaka i stupaca nakon predprocesiranja
-print(df.head()) # Ispis prvih redaka dataframe-a
+# Clean whitespace from column names and data
+df.columns = df.columns.str.strip()
+df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
 
-# Random dijeljenje skupa podataka na dva dijela 80:20 (trebati će nam kasnije)
+# Convert price and mileage to numeric, removing any currency symbols or commas
+df['price'] = pd.to_numeric(df['price'])
+df['mileage'] = pd.to_numeric(df['mileage'])
+
+# Standardize manufacturer names (example: convert variations of names)
+df['Manufacturer'] = df['Manufacturer'].str.lower()
+df['Manufacturer'] = df['Manufacturer'].replace({
+    'bmw': 'BMW',
+    'merc': 'Mercedes-Benz',
+    'volkswagen': 'Volkswagen',
+    'toyota': 'Toyota',
+    'hyundi': 'Hyundai',
+    'vauxhall': 'Vauxhall',
+    'audi': 'Audi',
+    'skoda': 'Skoda',
+    'ford': 'Ford'
+})
+
+# Drop any rows with missing values
+df = df.dropna()
+print("CSV size after: ", df.shape)
+print(df.head())
+
+# Random split of dataset into 80:20 (will need later)
 df20 = df.sample(frac=0.2, random_state=1)
 df = df.drop(df20.index)
 print("CSV size 80: ", df.shape)
 print("CSV size 20: ", df20.shape)
 
-# Spremanje predprocesiranog skupa podataka u novu CSV datoteku
-df.to_csv("WA_Sales_Products_2012-14_PROCESSED.csv", index=False) # Spremanje predprocesiranog skupa podataka u novu CSV datoteku
-df20.to_csv("WA_Sales_Products_2012-14_PROCESSED_20.csv", index=False) # Spremanje 20% skupa podataka u novu CSV datoteku
-
-
-'''
-OUTPUT:
-CSV size before:  (78475, 11)
-CSV size after:  (77931, 10)
-  Retailer country Order method type Retailer type Product type         Product  Year  Quarter   Revenue  Quantity  Gross margin
-0           Canada               Web  Sports Store   Binoculars   Ranger Vision  2012  Q2 2012  11520.00        72      0.537500
-1           Canada               Web  Sports Store   Navigation   Glacier Basic  2012  Q2 2012  13918.38       434      0.376364
-2           Canada               Web  Sports Store   Navigation  Glacier Deluxe  2012  Q2 2012   8249.15        91      0.379702
-3           Canada               Web  Sports Store   Navigation     Glacier GPS  2012  Q2 2012  20080.59       183      0.284152
-4           Canada               Web  Sports Store   Navigation    Trail Master  2012  Q2 2012   1460.00         4      0.350822
-CSV size 80:  (62345, 10)
-CSV size 20:  (15586, 10)
-'''
+# Save preprocessed dataset to new CSV file
+df.to_csv("CarsData_PROCESSED.csv", index=False)
+df20.to_csv("CarsData_PROCESSED_20.csv", index=False)
